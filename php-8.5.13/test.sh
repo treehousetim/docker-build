@@ -89,9 +89,27 @@ for target in "${TARGETS[@]}"; do
       grep -q "$want" <<<"$fpmconf" || { echo "  FAIL: fpm pool missing '$want'"; fail=$((fail+1)); }
     done
     grep -q "disable_functions.*shell_exec" <<<"$fpmconf" || { echo "  FAIL: fpm pool doesn't disable exec functions"; fail=$((fail+1)); }
-    grep -qE "pm.status_path = .+|ping.path = .+" <<<"$fpmconf" && { echo "  FAIL: fpm status/ping page enabled"; fail=$((fail+1)); }
+    # Must be absent, not empty: "ping.path =" kills every worker on 8.5.13+.
+    for d in pm.status_path ping.path; do
+      grep -qE "[[:space:]]$d = undefined$" <<<"$fpmconf" || { echo "  FAIL: $d is set (want unset): $(grep -E "[[:space:]]$d =" <<<"$fpmconf" | sed 's/.*NOTICE: *//')"; fail=$((fail+1)); }
+    done
     fpminfo="$(run php-fpm -i)"
     grep -qE "^cgi.fix_pathinfo => (Off|0) " <<<"$fpminfo" || { echo "  FAIL: cgi.fix_pathinfo not 0 under fpm"; fail=$((fail+1)); }
+
+    # -tt only parses config. Start FPM for real and serve one FastCGI request,
+    # so a pool whose workers die on startup can't pass.
+    cid="$(docker run -d -v "$PWD/tests:/opt/fcgitest:ro" "$image")"
+    resp=""
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      resp="$(docker exec "$cid" php /opt/fcgitest/fcgi-request.php /opt/fcgitest/ok.php 2>&1)" && break
+      sleep 0.5
+    done
+    grep -q "^fcgi-ok memory_limit=128M sapi=fpm-fcgi" <<<"$resp" \
+      || { echo "  FAIL: php-fpm didn't serve a request: $resp"; fail=$((fail+1)); }
+    if errs="$(docker logs "$cid" 2>&1 | grep -E "ERROR|exited with code")"; then
+      echo "  FAIL: php-fpm logged errors:"; sed -n '1,5s/^/    /p' <<<"$errs"; fail=$((fail+1))
+    fi
+    docker rm -f "$cid" >/dev/null
   fi
 
   [[ $fail == "$before" ]] && echo "  ok: PHP $version ($flavor)"

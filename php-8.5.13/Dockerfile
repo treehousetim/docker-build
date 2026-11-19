@@ -48,10 +48,13 @@ FROM base AS fpm-prod
 # pcntl is CLI-only; keep it out of FPM
 RUN rm "$PHP_INI_DIR/conf.d/docker-php-ext-pcntl.ini"
 # Pool sizing for a 4 GB RAM server; override with -e at run time.
-ENV PHP_FPM_MAX_CHILDREN=40 \
-    PHP_FPM_START_SERVERS=6 \
-    PHP_FPM_MIN_SPARE_SERVERS=4 \
-    PHP_FPM_MAX_SPARE_SERVERS=10 \
+# MAX_CHILDREN x MEMORY_LIMIT (24 x 128M = 3 GB) fits in RAM even if every
+# worker hits its limit at once, leaving ~1 GB for nginx and the OS.
+ENV PHP_FPM_MAX_CHILDREN=24 \
+    PHP_FPM_MEMORY_LIMIT=128M \
+    PHP_FPM_START_SERVERS=5 \
+    PHP_FPM_MIN_SPARE_SERVERS=3 \
+    PHP_FPM_MAX_SPARE_SERVERS=8 \
     PHP_FPM_MAX_REQUESTS=1000 \
     PHP_FPM_REQUEST_TERMINATE_TIMEOUT=120s
 COPY conf/fpm-pool.conf /usr/local/etc/php-fpm.d/z-override.conf

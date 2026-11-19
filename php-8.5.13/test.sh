@@ -85,7 +85,7 @@ for target in "${TARGETS[@]}"; do
 
   if [[ "$variant" == fpm ]]; then
     fpmconf="$(run php-fpm -tt 2>&1)" || { echo "  FAIL: php-fpm -tt"; fail=$((fail+1)); }
-    for want in "pm.max_children = 40" "pm.max_requests = 1000" "request_terminate_timeout = 120"; do
+    for want in "pm.max_children = 24" "pm.max_requests = 1000" "request_terminate_timeout = 120" "memory_limit.*128M"; do
       grep -q "$want" <<<"$fpmconf" || { echo "  FAIL: fpm pool missing '$want'"; fail=$((fail+1)); }
     done
     grep -q "disable_functions.*shell_exec" <<<"$fpmconf" || { echo "  FAIL: fpm pool doesn't disable exec functions"; fail=$((fail+1)); }

@@ -50,7 +50,7 @@ sockets, sysvmsg, sysvsem, sysvshm, xsl.
 ## Production defaults
 
 - `expose_php` off, `allow_url_include` off, errors logged rather than shown
-- `memory_limit` 256M, `upload_max_filesize` 100M, `post_max_size` 110M,
+- `memory_limit` 128M for web requests (`PHP_FPM_MEMORY_LIMIT`), 256M for CLI, `upload_max_filesize` 100M, `post_max_size` 110M,
   `max_execution_time` 60s
 - Session cookies: strict mode, HttpOnly, Secure, SameSite=Lax, cookies only
 - `date.timezone` America/Chicago (override with your own ini in `conf.d/`)
@@ -60,16 +60,18 @@ sockets, sysvmsg, sysvsem, sysvshm, xsl.
 
 ## Server sizing
 
-The FPM pool defaults target a **4 GB RAM, 2–4 vCPU server**: 40 workers at
-~50 MB each leave room for nginx and the OS. Size it for your server with env
-vars, no rebuild needed:
+The FPM pool defaults target a **4 GB RAM, 2–4 vCPU server**, sized for the
+worst case: 24 workers × 128M `memory_limit` = 3 GB, leaving ~1 GB for nginx and
+the OS, so the pool can't run the server out of memory. Rule:
+`PHP_FPM_MAX_CHILDREN × PHP_FPM_MEMORY_LIMIT` ≤ server RAM − ~1 GB. Size it
+for your server with env vars, no rebuild needed:
 
 | Server RAM | `PHP_FPM_MAX_CHILDREN` | `PHP_FPM_START_SERVERS` | `PHP_FPM_MIN_SPARE_SERVERS` | `PHP_FPM_MAX_SPARE_SERVERS` |
 |-----------:|-----------------------:|------------------------:|----------------------------:|----------------------------:|
-| 1 GB       | 10                     | 2                       | 2                           | 4                           |
-| 2 GB       | 20                     | 4                       | 2                           | 6                           |
-| **4 GB**   | **40** (default)       | **6**                   | **4**                       | **10**                      |
-| 8 GB       | 80                     | 10                      | 8                           | 20                          |
+| 1 GB       | 4                      | 2                       | 1                           | 3                           |
+| 2 GB       | 8                      | 2                       | 2                           | 4                           |
+| **4 GB**   | **24** (default)       | **5**                   | **3**                       | **8**                       |
+| 8 GB       | 56                     | 10                      | 6                           | 16                          |
 
 Also `PHP_FPM_MAX_REQUESTS` (default 1000) and
 `PHP_FPM_REQUEST_TERMINATE_TIMEOUT` (default `120s`). Halve the worker counts if

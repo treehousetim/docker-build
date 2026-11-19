@@ -39,7 +39,7 @@ Published for `linux/amd64` and `linux/arm64`.
   exif, ffi, ftp, shmop, soap, sockets, sysvmsg/sysvsem/sysvshm, xsl --
   `./test.sh` fails if any of them sneak back in.
 - **ini** (`conf/php-prod.ini`): `expose_php` off, errors logged not shown,
-  256M memory, 100M/110M upload/post, 60s max_execution_time, America/Chicago,
+  256M memory for CLI (FPM: 128M, see below), 100M/110M upload/post, 60s max_execution_time, America/Chicago,
   strict/httponly/secure/Lax session cookies. Opcache is stock.
 - **FPM pool** (`conf/fpm-pool.conf`): dynamic, sized for a 4 GB server (see below),
   1000 max requests, 120s request timeout, `exec`/`shell_exec`/`system`/`proc_open`/…
@@ -49,26 +49,29 @@ Published for `linux/amd64` and `linux/arm64`.
 
 Pool size matters: it caps how many requests PHP runs at once, and so how
 much RAM PHP can use. The defaults target a **4 GB RAM, 2–4 vCPU server**
-that also runs nginx and the OS:
+that also runs nginx and the OS, and are sized for the **worst case**, every
+worker at its memory limit at once:
 
-    40 workers × ~50 MB per busy worker ≈ 2 GB for PHP, ~2 GB headroom
+    24 workers × 128M memory_limit = 3 GB for PHP, ~1 GB for nginx + OS
 
-(An idle worker in this image uses ~11 MB; a worker running a typical
-framework app sits around 40–80 MB. `memory_limit` = 256M is a per-request
-ceiling, not the typical footprint.)
+So the pool can't push the server into swap or the OOM killer. Typical use
+is far lower (an idle worker is ~11 MB, a busy framework app 40–80 MB).
 
-Size it for your server with env vars at `docker run` / compose time, with no rebuild:
+The rule: **`PHP_FPM_MAX_CHILDREN × PHP_FPM_MEMORY_LIMIT` ≤ RAM for PHP**
+(server RAM minus ~1 GB). Size it with env vars at `docker run` / compose
+time, with no rebuild:
 
 | Server RAM | `PHP_FPM_MAX_CHILDREN` | `_START_SERVERS` | `_MIN_SPARE_SERVERS` | `_MAX_SPARE_SERVERS` |
 |-----------:|-----------------------:|-----------------:|---------------------:|---------------------:|
-| 1 GB       | 10                     | 2                | 2                    | 4                    |
-| 2 GB       | 20                     | 4                | 2                    | 6                    |
-| **4 GB**   | **40** (default)       | **6**            | **4**                | **10**               |
-| 8 GB       | 80                     | 10               | 8                    | 20                   |
+| 1 GB       | 4                      | 2                | 1                    | 3                    |
+| 2 GB       | 8                      | 2                | 2                    | 4                    |
+| **4 GB**   | **24** (default)       | **5**            | **3**                | **8**                |
+| 8 GB       | 56                     | 10               | 6                    | 16                   |
 
-Rule of thumb: `max_children ≈ RAM you can give PHP ÷ average worker RSS`.
-Measure the RSS of your own app under load and adjust. If the database
-runs on the same server, halve these numbers. Also available:
+(At the default `PHP_FPM_MEMORY_LIMIT=128M`.) If your app needs more memory
+per request, raise `PHP_FPM_MEMORY_LIMIT` and lower `PHP_FPM_MAX_CHILDREN` to
+match, e.g. 256M → 12 workers on 4 GB. If the database runs on the same
+server, halve the worker counts. Also available:
 `PHP_FPM_MAX_REQUESTS` (default 1000) and `PHP_FPM_REQUEST_TERMINATE_TIMEOUT` (120s).
 
 ```sh

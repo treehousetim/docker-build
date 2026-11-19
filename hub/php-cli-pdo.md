@@ -47,7 +47,7 @@ sockets, sysv*, xsl.
 ## Production defaults
 
 Same hardening as the FPM image: `expose_php` off, errors logged not shown,
-256M `memory_limit`, strict/secure session cookies, `date.timezone`
+256M `memory_limit` (CLI), strict/secure session cookies, `date.timezone`
 America/Chicago. Unlike FPM, `exec()` and friends are **enabled**, so scripts and
 cron jobs can shell out. CLI has no execution time limit.
 

@@ -5,7 +5,7 @@
 # Built via docker-bake.hcl -- see README.md. PHP_VERSION and VARIANT must
 # agree with the --target you build (bake handles that for you).
 
-ARG PHP_VERSION=8.5.12
+ARG PHP_VERSION=8.5.13
 ARG VARIANT=cli
 ARG ALPINE_VERSION=3.24
 
@@ -25,9 +25,6 @@ RUN install-php-extensions \
         bcmath \
         bz2 \
         calendar \
-        exif \
-        ffi \
-        ftp \
         gd \
         gettext \
         gmp \
@@ -37,13 +34,6 @@ RUN install-php-extensions \
         pcntl \
         pdo_mysql \
         pdo_pgsql \
-        shmop \
-        soap \
-        sockets \
-        sysvmsg \
-        sysvsem \
-        sysvshm \
-        xsl \
         zip
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"

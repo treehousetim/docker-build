@@ -8,9 +8,9 @@ comes in two flavors.
 
 | Tag                                     | Flavor | Use for                      |
 |-----------------------------------------|--------|------------------------------|
-| `php-fpm-pdo:8.5.12-prod`, `:8.5-prod`  | prod   | production, staging, CI      |
-| `php-fpm-pdo:8.5.12`, `:8.5`, `:latest` | prod   | (alias of `-prod`)           |
-| `php-fpm-pdo:8.5.12-dev`, `:8.5-dev`    | dev    | local development only       |
+| `php-fpm-pdo:8.5.13-prod`, `:8.5-prod`  | prod   | production, staging, CI      |
+| `php-fpm-pdo:8.5.13`, `:8.5`, `:latest` | prod   | (alias of `-prod`)           |
+| `php-fpm-pdo:8.5.13-dev`, `:8.5-dev`    | dev    | local development only       |
 
 Same for `treehousetim/php-cli-pdo`. **A tag without `-dev` is always the prod
 image.** `:latest` follows the newest PHP release (publish older branches with
@@ -32,10 +32,12 @@ Published for `linux/amd64` and `linux/arm64`.
 
 ## What's in the images
 
-- **Extensions:** bcmath, bz2, calendar, curl, exif, ffi, ftp, gd, gettext, gmp,
-  iconv, intl, mbstring, mysqli, opcache, pcntl (CLI only), pdo_mysql, pdo_pgsql,
-  pdo_sqlite, shmop, soap, sockets, sodium, sqlite3, sysv*, xsl, zip, and the
-  PHP core set. `./test.sh` checks the full list.
+- **Extensions:** bcmath, bz2, calendar, curl, gd, gettext, gmp, iconv, intl,
+  mbstring, mysqli, opcache, pcntl (CLI only), pdo_mysql, pdo_pgsql, pdo_sqlite,
+  sodium, sqlite3, zip, and the PHP core set. `./test.sh` checks the full list.
+  Deliberately **not** included (attack surface most web apps don't need):
+  exif, ffi, ftp, shmop, soap, sockets, sysvmsg/sysvsem/sysvshm, xsl --
+  `./test.sh` fails if any of them sneak back in.
 - **ini** (`conf/php-prod.ini`): `expose_php` off, errors logged not shown,
   256M memory, 100M/110M upload/post, 60s max_execution_time, America/Chicago,
   strict/httponly/secure/Lax session cookies. Opcache is stock.
@@ -94,7 +96,7 @@ These wrap `docker buildx bake`, which builds every target defined in
 
 ## Bumping PHP
 
-Change `PHP_VERSION` in `docker-bake.hcl` (or one-off: `PHP_VERSION=8.5.13 ./build.sh`),
+Change `PHP_VERSION` in `docker-bake.hcl` (or one-off: `PHP_VERSION=8.5.14 ./build.sh`),
 then `./build.sh && ./publish.sh`. Check the tag exists first:
 <https://hub.docker.com/_/php/tags?name=8.5>
 

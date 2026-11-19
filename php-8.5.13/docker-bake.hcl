@@ -2,10 +2,10 @@
 # docker buildx bake prod       -> just the prod images (groups: prod, dev; or one target, e.g. fpm-dev)
 # docker buildx bake --push     -> build multi-arch and push to Docker Hub (see publish.sh)
 #
-# Bumping PHP: change PHP_VERSION below (or: PHP_VERSION=8.5.13 docker buildx bake).
+# Bumping PHP: change PHP_VERSION below (or: PHP_VERSION=8.5.14 docker buildx bake).
 
 variable "PHP_VERSION" {
-  default = "8.5.12"
+  default = "8.5.13"
 }
 
 variable "ALPINE_VERSION" {
@@ -33,10 +33,10 @@ function "minor" {
 }
 
 # Every image gets an explicit -prod or -dev tag. The bare version tag is an
-# alias for -prod, so a plain `:8.5.12` pull is always safe to deploy. So is
+# alias for -prod, so a plain `:8.5.13` pull is always safe to deploy. So is
 # :latest (newest PHP, prod flavor) unless LATEST=false.
-#   php-fpm-pdo:8.5.12  php-fpm-pdo:8.5  php-fpm-pdo:8.5.12-prod  php-fpm-pdo:8.5-prod
-#   php-fpm-pdo:8.5.12-dev  php-fpm-pdo:8.5-dev
+#   php-fpm-pdo:8.5.13  php-fpm-pdo:8.5  php-fpm-pdo:8.5.13-prod  php-fpm-pdo:8.5-prod
+#   php-fpm-pdo:8.5.13-dev  php-fpm-pdo:8.5-dev
 function "tags" {
   params = [image, flavor]
   result = concat(

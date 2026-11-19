@@ -16,12 +16,12 @@ Multi-arch: `linux/amd64` (Intel/AMD) and `linux/arm64` (Apple Silicon, Graviton
 
 | Tag                                  | Flavor | Use for                          |
 |--------------------------------------|--------|----------------------------------|
-| `8.5.12-prod`, `8.5-prod`            | prod   | production, staging, CI          |
-| `8.5.12`, `8.5`, `latest`            | prod   | aliases of `-prod`               |
-| `8.5.12-dev`, `8.5-dev`              | dev    | local development only           |
+| `8.5.13-prod`, `8.5-prod`            | prod   | production, staging, CI          |
+| `8.5.13`, `8.5`, `latest`            | prod   | aliases of `-prod`               |
+| `8.5.13-dev`, `8.5-dev`              | dev    | local development only           |
 
 **A tag without `-dev` is always the production image.** Pin `8.5` to get PHP
-patch releases automatically, or `8.5.12` to stay put.
+patch releases automatically, or `8.5.13` to stay put.
 
 ## prod vs dev
 
@@ -37,10 +37,12 @@ request and a CLI script side by side.
 
 ## Extensions
 
-Everything in `php-fpm-pdo` (bcmath, bz2, calendar, curl, exif, ffi, ftp, gd,
-gettext, gmp, intl, mbstring, mysqli, opcache, pdo_mysql, pdo_pgsql, pdo_sqlite,
-shmop, soap, sockets, sodium, sqlite3, sysv*, xsl, zip, …) **plus pcntl** for
-signal handling in long-running workers.
+Everything in `php-fpm-pdo` (bcmath, bz2, calendar, curl, gd, gettext, gmp,
+intl, mbstring, mysqli, opcache, pdo_mysql, pdo_pgsql, pdo_sqlite, sodium,
+sqlite3, zip, …) **plus pcntl** for signal handling in long-running workers.
+
+Not included, to keep attack surface down: exif, ffi, ftp, shmop, soap,
+sockets, sysv*, xsl.
 
 ## Production defaults
 

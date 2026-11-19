@@ -14,12 +14,12 @@ Multi-arch: `linux/amd64` (Intel/AMD) and `linux/arm64` (Apple Silicon, Graviton
 
 | Tag                                  | Flavor | Use for                          |
 |--------------------------------------|--------|----------------------------------|
-| `8.5.12-prod`, `8.5-prod`            | prod   | production, staging, CI          |
-| `8.5.12`, `8.5`, `latest`            | prod   | aliases of `-prod`               |
-| `8.5.12-dev`, `8.5-dev`              | dev    | local development only           |
+| `8.5.13-prod`, `8.5-prod`            | prod   | production, staging, CI          |
+| `8.5.13`, `8.5`, `latest`            | prod   | aliases of `-prod`               |
+| `8.5.13-dev`, `8.5-dev`              | dev    | local development only           |
 
 **A tag without `-dev` is always the production image.** Pin `8.5` to get PHP
-patch releases automatically, or `8.5.12` to stay put.
+patch releases automatically, or `8.5.13` to stay put.
 
 Check which flavor an image is:
 
@@ -39,11 +39,13 @@ docker image inspect -f '{{index .Config.Labels "com.treehousetim.image.flavor"}
 
 ## Extensions
 
-bcmath, bz2, calendar, ctype, curl, dom, exif, ffi, fileinfo, ftp, gd (freetype,
-jpeg, webp), gettext, gmp, iconv, intl, mbstring, mysqli, mysqlnd, opcache,
-openssl, pdo_mysql, pdo_pgsql, pdo_sqlite, shmop, soap, sockets, sodium, sqlite3,
-sysvmsg, sysvsem, sysvshm, xml, xmlreader, xmlwriter, xsl, zip, zlib, plus the
-PHP core set.
+bcmath, bz2, calendar, ctype, curl, dom, fileinfo, gd (freetype, jpeg, webp),
+gettext, gmp, iconv, intl, mbstring, mysqli, mysqlnd, opcache, openssl,
+pdo_mysql, pdo_pgsql, pdo_sqlite, sodium, sqlite3, xml, xmlreader, xmlwriter,
+zip, zlib, plus the PHP core set.
+
+Not included, to keep attack surface down: exif, ffi, ftp, shmop, soap,
+sockets, sysvmsg, sysvsem, sysvshm, xsl.
 
 ## Production defaults
 
